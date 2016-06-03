@@ -9,6 +9,9 @@ target 'eventAddDemo' do
 pod "MagicalRecord"
 pod "MagicalRecord/CocoaLumberjack"
 
+#Similar Android Toast message
+pod 'Toast','3.0'
+
 end
 
 target 'eventAddDemoTests' do

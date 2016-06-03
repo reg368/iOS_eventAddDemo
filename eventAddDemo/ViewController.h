@@ -14,6 +14,7 @@
 @interface ViewController : UITableViewController
 
 @property (nonatomic) id<ViewControllerPopOverDelegate> delegate;
+@property (weak, nonatomic) IBOutlet UIBarButtonItem *alarmControllerButton;
 
 @end
 

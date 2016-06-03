@@ -3,6 +3,7 @@
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="10085"/>
+        <capability name="Navigation items with more than one left or right bar item" minToolsVersion="7.0"/>
     </dependencies>
     <scenes>
         <!--Event Setting Demo-->
@@ -25,14 +26,14 @@
                                             <rect key="frame" x="15" y="5" width="32" height="20"/>
                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="16"/>
-                                            <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                                            <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                                             <nil key="highlightedColor"/>
                                         </label>
                                         <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" text="Subtitle" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="NTj-tu-J2l">
                                             <rect key="frame" x="15" y="25" width="41" height="14"/>
                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="11"/>
-                                            <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                                            <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                                             <nil key="highlightedColor"/>
                                         </label>
                                     </subviews>
@@ -46,13 +47,23 @@
                     </tableView>
                     <toolbarItems/>
                     <navigationItem key="navigationItem" title="Event Setting Demo" id="rtz-Jo-jVq">
-                        <barButtonItem key="rightBarButtonItem" systemItem="add" id="boz-pf-0FK">
-                            <connections>
-                                <action selector="onRightButtonAdd:" destination="DP1-mT-vzT" id="yx4-bO-Yfl"/>
-                            </connections>
-                        </barButtonItem>
+                        <rightBarButtonItems>
+                            <barButtonItem systemItem="add" id="boz-pf-0FK">
+                                <connections>
+                                    <action selector="onRightButtonAdd:" destination="DP1-mT-vzT" id="yx4-bO-Yfl"/>
+                                </connections>
+                            </barButtonItem>
+                            <barButtonItem title="Close" id="EWh-qc-gA4">
+                                <connections>
+                                    <action selector="AlarmControllButton:" destination="DP1-mT-vzT" id="dbh-0v-EU6"/>
+                                </connections>
+                            </barButtonItem>
+                        </rightBarButtonItems>
                     </navigationItem>
                     <simulatedToolbarMetrics key="simulatedBottomBarMetrics"/>
+                    <connections>
+                        <outlet property="alarmControllerButton" destination="EWh-qc-gA4" id="tXM-cw-V6E"/>
+                    </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="6qu-do-bKe" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>

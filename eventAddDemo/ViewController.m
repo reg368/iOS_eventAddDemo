@@ -11,6 +11,7 @@
 #import "EventKit/EventKit.h"
 #import "EventVO.h"
 #import "AppDelegate.h"
+#import "UIView+Toast.h"
 /* 本機端儲存的import */
 #import <MagicalRecord/MagicalRecord.h>
 
@@ -33,6 +34,7 @@
 
 @implementation ViewController{
     dispatch_queue_t updateEventIndexQueue;
+    BOOL isAlarm;
 }
 
 -(EKEventStore*)eventStore{
@@ -87,6 +89,23 @@
     
     updateEventIndexQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
     
+    NSString *alarmButtonTitle = [[NSUserDefaults standardUserDefaults] objectForKey:@"alarm_button_title"];
+    if(alarmButtonTitle){
+        if([alarmButtonTitle isEqualToString:@"Open"]){
+            isAlarm = YES;
+        }else{
+            isAlarm = NO;
+        }
+        self.alarmControllerButton.title = alarmButtonTitle;
+    }
+    
+    if(self.eventItems == nil || self.eventItems.count == 0){
+        isAlarm = NO;
+        self.alarmControllerButton.title = @"Close";
+        [[NSUserDefaults standardUserDefaults] setObject:@"Close" forKey:@"alarm_button_title"];
+    }
+        
+    
 }
 
 -(void)viewWillAppear:(BOOL)animated{
@@ -135,7 +154,12 @@
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-
+    EKEvent *event = [self.eventItems objectAtIndex:indexPath.row];
+    for(EKAlarm *alarm in event.alarms)
+        [event removeAlarm:alarm];
+    
+    [self.eventStore  saveEvent:event span:EKSpanThisEvent commit:YES error:nil];
+    [self.view makeToast:[NSString stringWithFormat:@"%@ : 提醒已刪除",event.title] duration:3.0 position:CSToastPositionTop ];
 }
 
 // Override to support conditional editing of the table view.
@@ -164,6 +188,12 @@
         }
         [self.eventItems removeObjectAtIndex:indexPath.row];
         [self.tableView reloadData];
+        
+        if(self.eventItems == nil || self.eventItems.count == 0){
+            [[NSUserDefaults standardUserDefaults] setObject:@"Close" forKey:@"alarm_button_title"];
+            isAlarm = NO;
+            self.alarmControllerButton.title = @"Close";
+        }
     }
 }
 
@@ -237,24 +267,27 @@
                 //  NSLog(@"default");
                 // ... delete all event in core data
                 dispatch_sync(updateEventIndexQueue, ^{
-                    NSLog(@"event delete");
-                    NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] initWithEntityName:@"EventVO"];
-                    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"date >= %@",[NSDate date]];
-                    [fetchRequest setPredicate:predicate];
-                    
-                    NSArray  *datas = [EventVO MR_executeFetchRequest:fetchRequest];
-                    
-                    for(EventVO *vo in datas){
-                        NSManagedObjectContext *context = [vo managedObjectContext];
-                        [vo MR_deleteEntityInContext:context];
-                        [context MR_saveToPersistentStoreAndWait];
+                    @autoreleasepool {
+                        
+                        //NSLog(@"event delete");
+                        NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] initWithEntityName:@"EventVO"];
+                        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"date >= %@",[NSDate date]];
+                        [fetchRequest setPredicate:predicate];
+                        
+                        NSArray  *datas = [EventVO MR_executeFetchRequest:fetchRequest];
+                        
+                        for(EventVO *vo in datas){
+                            NSManagedObjectContext *context = [vo managedObjectContext];
+                            [vo MR_deleteEntityInContext:context];
+                            [context MR_saveToPersistentStoreAndWait];
+                        }
+                        
                     }
-                    
                 });
                 
                 // ... insert new event in core data
                 dispatch_sync(updateEventIndexQueue, ^{
-                    NSLog(@"event save");
+                    //NSLog(@"event save");
                     for(EKEvent *event in self.eventItems){
                         [MagicalRecord saveWithBlock:^(NSManagedObjectContext *localContext) {
                             
@@ -353,6 +386,45 @@
         }
     }];
 }
+- (IBAction)AlarmControllButton:(id)sender {
+    if(self.eventItems != nil && self.eventItems.count > 0){
+        
+        //do close alarm
+        if(!isAlarm){
+            
+            for(EKEvent *event in self.eventItems){
+                
+                for(EKAlarm *alarm in event.alarms)
+                    [event removeAlarm:alarm];
+                
+                [self.eventStore  saveEvent:event span:EKSpanThisEvent commit:YES error:nil];
+            }
+            
+            isAlarm = YES;
+            
+            [[NSUserDefaults standardUserDefaults] setObject:@"Open" forKey:@"alarm_button_title"];
+            ((UIBarButtonItem*)sender).title = @"Open";
+            [self.view makeToast:@"所有提醒已關閉" duration:3.0 position:CSToastPositionTop ];
+            
+        //do open alarm
+        }else{
+            
+            for(EKEvent *event in self.eventItems){
+                if(event.alarms == nil || event.alarms.count > 0){
+                    [event addAlarm:[EKAlarm alarmWithAbsoluteDate:event.startDate]];
+                    [self.eventStore  saveEvent:event span:EKSpanThisEvent commit:YES error:nil];
+                }
+            }
+            
+            isAlarm = NO;
+            
+            [[NSUserDefaults standardUserDefaults] setObject:@"Close" forKey:@"alarm_button_title"];
+            ((UIBarButtonItem*)sender).title = @"Close";
+            [self.view makeToast:@"所有提醒已開啟" duration:3.0 position:CSToastPositionTop ];
+        }
+    }else
+    [self.view makeToast:@"目前沒有任何事件" duration:3.0 position:CSToastPositionTop ];
+}
 
 -(void)setEventByTitle:(NSString*)title andYear:(NSNumber*)year andMonth:(NSNumber*)month andDay:(NSNumber*)day andHour:(NSNumber *)hour andMinute:(NSNumber *)minute{
     
@@ -377,7 +449,9 @@
     
     [event setCalendar:[self.eventStore  defaultCalendarForNewEvents]];
     [event addAlarm:[EKAlarm alarmWithAbsoluteDate:date]];
-   
+    
+    
+    
     [self.eventStore  saveEvent:event span:EKSpanThisEvent commit:YES error:nil];
     
     [MagicalRecord saveWithBlock:^(NSManagedObjectContext *localContext) {
@@ -385,6 +459,7 @@
             EventVO *eventvo = [EventVO MR_createEntityInContext:localContext];
             eventvo.identifier = event.eventIdentifier;
             eventvo.date = event.startDate;
+        
        
     }completion:^(BOOL success, NSError *error) {
         [self.eventItems addObject:event];
