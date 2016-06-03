@@ -7,16 +7,22 @@
 //
 
 #import "AppDelegate.h"
-
+/* 本機端儲存的import */
+#import <MagicalRecord/MagicalRecord.h>
 @interface AppDelegate ()
 
 @end
 
-@implementation AppDelegate
+@implementation AppDelegate{
+     UIBackgroundTaskIdentifier bgTask;
+}
 
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Override point for customization after application launch.
+    [MagicalRecord setupAutoMigratingCoreDataStack];
+     [application setMinimumBackgroundFetchInterval:UIApplicationBackgroundFetchIntervalMinimum];
+
     return YES;
 }
 
@@ -28,6 +34,13 @@
 - (void)applicationDidEnterBackground:(UIApplication *)application {
     // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
     // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
+    /* 額外爭取3分鐘背景執行時間 */
+    bgTask = [application beginBackgroundTaskWithExpirationHandler:^{
+        UIApplication *application = [UIApplication sharedApplication];
+        [application endBackgroundTask:bgTask];
+        bgTask = UIBackgroundTaskInvalid;
+    }];
+   
 }
 
 - (void)applicationWillEnterForeground:(UIApplication *)application {
@@ -36,6 +49,10 @@
 
 - (void)applicationDidBecomeActive:(UIApplication *)application {
     // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
+    if([_delegate respondsToSelector:@selector(refreshLocalEvent)]){
+        [_delegate refreshLocalEvent];
+    }
+    
 }
 
 - (void)applicationWillTerminate:(UIApplication *)application {

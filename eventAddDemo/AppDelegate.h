@@ -8,10 +8,17 @@
 
 #import <UIKit/UIKit.h>
 
+@protocol EventAppDelegate;
+
 @interface AppDelegate : UIResponder <UIApplicationDelegate>
 
 @property (strong, nonatomic) UIWindow *window;
-
+@property (nonatomic) id<EventAppDelegate> delegate;
 
 @end
 
+@protocol EventAppDelegate <NSObject>
+
+@optional
+-(void)refreshLocalEvent;
+@end
