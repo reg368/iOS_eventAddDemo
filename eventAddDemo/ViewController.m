@@ -449,7 +449,7 @@
 #pragma mark -
 #pragma mark   EditSettingDelegate
 
--(void)viewController:(UIViewController*)vc saveEventByTitle:(NSString*)title andYear:(NSNumber*)year andMonth:(NSNumber*)month andDay:(NSNumber*)day andHour:(NSNumber *)hour andMinute:(NSNumber *)minute{
+-(void)viewController:(UIViewController*)vc saveEventByTitle:(NSString*)title andYear:(NSNumber*)year andMonth:(NSNumber*)month andDay:(NSNumber*)day andHour:(NSNumber *)hour andMinute:(NSNumber *)minute completed:(save_completed)completed{
     
     EKEvent *event = [EKEvent eventWithEventStore:self.eventStore ];
     if(title.length == 0){
@@ -487,7 +487,10 @@
     }completion:^(BOOL success, NSError *error) {
         [self.eventItems addObject:event];
         [self.tableView reloadData];
+        completed();
     }];
+
+    
 }
 
 #pragma mark -

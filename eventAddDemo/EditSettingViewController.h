@@ -21,9 +21,12 @@
 
 @end
 
+/* 儲存完資料後所需要做的block */
+typedef void (^save_completed)();
+
 @protocol EditSettingDelegate <NSObject>
 @optional
--(void)viewController:(UIViewController*)vc saveEventByTitle:(NSString*)title andYear:(NSNumber*)year andMonth:(NSNumber*)month andDay:(NSNumber*)day andHour:(NSNumber*)hour andMinute:(NSNumber*)minute;
+-(void)viewController:(UIViewController*)vc saveEventByTitle:(NSString*)title andYear:(NSNumber*)year andMonth:(NSNumber*)month andDay:(NSNumber*)day andHour:(NSNumber*)hour andMinute:(NSNumber*)minute completed:(save_completed)completed;
 
 @end
 

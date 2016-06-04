@@ -186,16 +186,36 @@ const int LABEL_HEIGHT = 10;
 }
 
 #pragma mark -
+#pragma mark  on recive textfield notification
+
+- (void)textfieldOnClick:(NSNotification *)notification
+{
+    // 處理鍵盤彈出來的狀況
+    
+}
+
+#pragma mark -
 #pragma mark  Button action selector
 
 -(void)rightBtnClick:(UIBarButtonItem*)sender{
-    if([_delegate respondsToSelector:@selector( viewController:saveEventByTitle:andYear:andMonth:andDay:andHour:andMinute:)]){
-        [_delegate viewController:self saveEventByTitle:self.textfield.text andYear:selectedYear andMonth:selectedMonth andDay:selectedDay andHour:selectedHour andMinute:selectedMinute];
+    if([_delegate respondsToSelector:@selector( viewController:saveEventByTitle:andYear:andMonth:andDay:andHour:andMinute: completed:)]){
+        
+      
+        /* 進入到block內的外部變數都只可讀取不可變更 , 如果我們想要讓某個 block 可以改動某個外部的變數，我們就要在這個需要可以被 block 改動的變數前面，加上 __block 關鍵字。 */
+        /* 即使開啟了 ARC，還是可能會遇到循環 retain 的問題
+           進入到block內的物件會將這份變數先複製一份再使用 , 為了不要讓記憶體重複retain , 先宣告一個weak的self 
+           (：self 要被釋放才會去釋放這個 property，但是這個 property 作為 block 又 retain 了 self 導致 self 無法被釋放。)
+         */
+          __weak EditSettingViewController *weakSelf = self;
+        
+        [_delegate viewController:self saveEventByTitle:self.textfield.text andYear:selectedYear andMonth:selectedMonth andDay:selectedDay andHour:selectedHour andMinute:selectedMinute completed:^{
+           
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [weakSelf dismissViewControllerAnimated:YES completion:nil];
+            });
+            
+        }];
     }
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [self dismissViewControllerAnimated:YES completion:nil];
-    });
-
 }
 
 -(void)leftBtnClick:(UIBarButtonItem*)sender{
