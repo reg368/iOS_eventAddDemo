@@ -21,6 +21,6 @@
 @protocol ViewControllerPopOverDelegate <NSObject>
 
 @optional
--(void)initView;
+-(void)viewControllerinit:(UIViewController*)vc;
 
 @end

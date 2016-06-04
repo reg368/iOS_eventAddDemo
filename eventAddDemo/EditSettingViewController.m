@@ -41,6 +41,8 @@ const int PADDING_LEFT = 5;
 const int PADDING_TOP = 5;
 const int LABEL_HEIGHT = 10;
 
+#pragma mark -
+#pragma mark  Custom accessors
 
 -(UINavigationBar*)navigationBar{
     if(!_navigationBar){
@@ -161,6 +163,8 @@ const int LABEL_HEIGHT = 10;
     return _minutes;
 }
 
+#pragma mark -
+#pragma mark  View life cycle
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -176,11 +180,17 @@ const int LABEL_HEIGHT = 10;
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
+    if ([self.view window] == nil) {
+        self.view = nil;
+    }
 }
 
+#pragma mark -
+#pragma mark  Button action selector
+
 -(void)rightBtnClick:(UIBarButtonItem*)sender{
-    if([_delegate respondsToSelector:@selector(setEventByTitle:andYear:andMonth:andDay:andHour:andMinute:)]){
-        [_delegate setEventByTitle:self.textfield.text andYear:selectedYear andMonth:selectedMonth andDay:selectedDay andHour:selectedHour andMinute:selectedMinute];
+    if([_delegate respondsToSelector:@selector( viewController:saveEventByTitle:andYear:andMonth:andDay:andHour:andMinute:)]){
+        [_delegate viewController:self saveEventByTitle:self.textfield.text andYear:selectedYear andMonth:selectedMonth andDay:selectedDay andHour:selectedHour andMinute:selectedMinute];
     }
     dispatch_async(dispatch_get_main_queue(), ^{
         [self dismissViewControllerAnimated:YES completion:nil];
@@ -194,6 +204,9 @@ const int LABEL_HEIGHT = 10;
         [self dismissViewControllerAnimated:YES completion:nil];
     });
 }
+
+#pragma mark -
+#pragma mark  UIPickerViewDataSource
 
 // returns the number of 'columns' to display.
 - (NSInteger)numberOfComponentsInPickerView:(UIPickerView *)pickerView{
@@ -244,6 +257,9 @@ const int LABEL_HEIGHT = 10;
 
     return 0;
 }
+
+#pragma mark -
+#pragma mark  UIPickerViewDelegate
 
 - (nullable NSString *)pickerView:(UIPickerView *)pickerView titleForRow:(NSInteger)row forComponent:(NSInteger)component {
     
@@ -306,7 +322,10 @@ const int LABEL_HEIGHT = 10;
     
 }
 
--(void)initView{
+#pragma mark -
+#pragma mark ViewControllerPopOverDelegate
+
+-(void)viewControllerinit:(UIViewController*)vc{
     
     //NSLog(@"EditSettingViewController view width : %f , height : %f",self.view.frame.size.width,self.view.frame.size.height);
   

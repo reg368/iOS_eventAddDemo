@@ -23,7 +23,7 @@
 
 @protocol EditSettingDelegate <NSObject>
 @optional
--(void)setEventByTitle:(NSString*)title andYear:(NSNumber*)year andMonth:(NSNumber*)month andDay:(NSNumber*)day andHour:(NSNumber*)hour andMinute:(NSNumber*)minute;
+-(void)viewController:(UIViewController*)vc saveEventByTitle:(NSString*)title andYear:(NSNumber*)year andMonth:(NSNumber*)month andDay:(NSNumber*)day andHour:(NSNumber*)hour andMinute:(NSNumber*)minute;
 
 @end
 

@@ -37,6 +37,9 @@
     BOOL isAlarm;
 }
 
+#pragma mark -
+#pragma mark  Custom accessors
+
 -(EKEventStore*)eventStore{
     if(!_eventStore){
         _eventStore = [[EKEventStore alloc]init];
@@ -73,6 +76,8 @@
     return _eventItems;
 }
 
+#pragma mark -
+#pragma mark  View life cycle
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -126,9 +131,13 @@
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
+    if ([self.view window] == nil) {
+        self.view = nil;
+    }
 }
 
-
+#pragma mark -
+#pragma mark  UITableViewDataSource
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     return self.eventItems.count;
@@ -153,15 +162,6 @@
     return cell;
 }
 
-- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-    EKEvent *event = [self.eventItems objectAtIndex:indexPath.row];
-    for(EKAlarm *alarm in event.alarms)
-        [event removeAlarm:alarm];
-    
-    [self.eventStore  saveEvent:event span:EKSpanThisEvent commit:YES error:nil];
-    [self.view makeToast:[NSString stringWithFormat:@"%@ : 提醒已刪除",event.title] duration:3.0 position:CSToastPositionTop ];
-}
-
 // Override to support conditional editing of the table view.
 // This only needs to be implemented if you are going to be returning NO
 // for some items. By default, all items are editable.
@@ -169,6 +169,7 @@
     // Return YES if you want the specified item to be editable.
     return YES;
 }
+
 
 // Override to support editing the table view.
 - (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -196,6 +197,21 @@
         }
     }
 }
+
+#pragma mark -
+#pragma mark   UITableViewDelegate
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    EKEvent *event = [self.eventItems objectAtIndex:indexPath.row];
+    for(EKAlarm *alarm in event.alarms)
+        [event removeAlarm:alarm];
+    
+    [self.eventStore  saveEvent:event span:EKSpanThisEvent commit:YES error:nil];
+    [self.view makeToast:[NSString stringWithFormat:@"%@ : 提醒已刪除",event.title] duration:3.0 position:CSToastPositionTop ];
+}
+
+#pragma mark -
+#pragma mark   IBActions
 
 /* 手指觸控長按點擊 */
 - (IBAction)longPressGestureRecognized:(id)sender {
@@ -356,8 +372,8 @@
             dispatch_async(dispatch_get_main_queue(), ^{
                 [self presentViewController:self.editView animated:YES completion:^{
                     
-                    if([_delegate respondsToSelector:@selector(initView)]){
-                        [_delegate initView];
+                    if([_delegate respondsToSelector:@selector(viewControllerinit:)]){
+                        [_delegate viewControllerinit:self];
                     }
                 
                 }];
@@ -392,12 +408,13 @@
         //do close alarm
         if(!isAlarm){
             
-            for(EKEvent *event in self.eventItems){
+            for(int i = 0 ; i < self.eventItems.count ; i ++){
                 
-                for(EKAlarm *alarm in event.alarms)
-                    [event removeAlarm:alarm];
+                for(EKAlarm *alarm in self.eventItems[i].alarms)
+                    [self.eventItems[i] removeAlarm:alarm];
                 
-                [self.eventStore  saveEvent:event span:EKSpanThisEvent commit:YES error:nil];
+                
+                [self.eventStore  saveEvent:self.eventItems[i] span:EKSpanThisEvent commit:YES error:nil];
             }
             
             isAlarm = YES;
@@ -409,11 +426,13 @@
         //do open alarm
         }else{
             
-            for(EKEvent *event in self.eventItems){
-                if(event.alarms == nil || event.alarms.count > 0){
-                    [event addAlarm:[EKAlarm alarmWithAbsoluteDate:event.startDate]];
-                    [self.eventStore  saveEvent:event span:EKSpanThisEvent commit:YES error:nil];
+            for(int i = 0 ; i < self.eventItems.count ; i ++){
+                
+                if(self.eventItems[i].alarms == nil || self.eventItems[i].alarms.count > 0){
+                    [self.eventItems[i] addAlarm:[EKAlarm alarmWithAbsoluteDate:self.eventItems[i].startDate]];
+                    [self.eventStore  saveEvent:self.eventItems[i] span:EKSpanThisEvent commit:YES error:nil];
                 }
+            
             }
             
             isAlarm = NO;
@@ -426,7 +445,11 @@
     [self.view makeToast:@"目前沒有任何事件" duration:3.0 position:CSToastPositionTop ];
 }
 
--(void)setEventByTitle:(NSString*)title andYear:(NSNumber*)year andMonth:(NSNumber*)month andDay:(NSNumber*)day andHour:(NSNumber *)hour andMinute:(NSNumber *)minute{
+
+#pragma mark -
+#pragma mark   EditSettingDelegate
+
+-(void)viewController:(UIViewController*)vc saveEventByTitle:(NSString*)title andYear:(NSNumber*)year andMonth:(NSNumber*)month andDay:(NSNumber*)day andHour:(NSNumber *)hour andMinute:(NSNumber *)minute{
     
     EKEvent *event = [EKEvent eventWithEventStore:self.eventStore ];
     if(title.length == 0){
@@ -467,11 +490,16 @@
     }];
 }
 
--(void)refreshLocalEvent{
+#pragma mark -
+#pragma mark   EventAppDelegate
+
+-(void)appDelegatedoRefreshLocalEvent:(AppDelegate*)appDelegate{
     [self.eventItems removeAllObjects];
     [self fetchStoreEvent];
 }
 
+#pragma mark -
+#pragma mark   self method
 
 /*  view 畫面呈現前 呼叫
     把custom app資料庫儲存的event identifier 取出然後從 calender store 裡面找 ,找的到就顯示,找不到就刪除（從custom app資料庫內)

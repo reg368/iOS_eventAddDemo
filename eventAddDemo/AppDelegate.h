@@ -20,5 +20,5 @@
 @protocol EventAppDelegate <NSObject>
 
 @optional
--(void)refreshLocalEvent;
+-(void)appDelegatedoRefreshLocalEvent:(AppDelegate*)appDelegate;
 @end
