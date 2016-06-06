@@ -12,6 +12,7 @@
 @interface EditSettingViewController ()<UIPickerViewDelegate,UIPickerViewDataSource>
 /* self view component */
 @property (nonatomic) UINavigationBar *navigationBar;
+@property (nonatomic) UIScrollView *scrollView;
 @property (nonatomic) UILabel *titlelabel;
 @property (nonatomic) UITextField *textfield;
 @property (nonatomic) UILabel *datePickerTitleLabel;
@@ -63,6 +64,14 @@ const int LABEL_HEIGHT = 10;
 
     }
     return _navigationBar;
+}
+
+-(UIScrollView*)scrollView{
+    if(!_scrollView){
+        CGRect fullScreenRect=[[UIScreen mainScreen] bounds];
+        _scrollView = [[UIScrollView alloc] initWithFrame:fullScreenRect];
+    }
+    return _scrollView;
 }
 
 -(UILabel*)titlelabel{
@@ -350,13 +359,15 @@ const int LABEL_HEIGHT = 10;
     //NSLog(@"EditSettingViewController view width : %f , height : %f",self.view.frame.size.width,self.view.frame.size.height);
   
    dispatch_async(dispatch_get_main_queue(), ^{
-   self.view.backgroundColor = [UIColor whiteColor];
-   [self.view addSubview:self.navigationBar];
-   [self.view addSubview:self.titlelabel];
-   [self.view addSubview:self.textfield];
-   [self.view addSubview:self.datePickerTitleLabel];
-   [self.view addSubview:self.picker];
-   [self.view addSubview:self.pickerTime];
+       
+   [self.view addSubview:self.scrollView];
+   [self.scrollView addSubview:self.navigationBar];
+   [self.scrollView addSubview:self.titlelabel];
+   [self.scrollView addSubview:self.textfield];
+   [self.scrollView addSubview:self.datePickerTitleLabel];
+   [self.scrollView addSubview:self.picker];
+   [self.scrollView addSubview:self.pickerTime];
+   
    });
    
    
@@ -377,10 +388,40 @@ const int LABEL_HEIGHT = 10;
    [self.picker selectRow:([selectedDay intValue] - 1)  inComponent:2 animated:YES];
    [self.pickerTime selectRow:([selectedHour intValue])  inComponent:0 animated:YES];
    [self.pickerTime selectRow:([selectedMinute intValue])  inComponent:1 animated:YES];
+    
+   [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(keyboardWasShown:)
+                                                 name:UIKeyboardDidShowNotification object:nil];
+    
+   [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(keyboardWillBeHidden:)
+                                                 name:UIKeyboardWillHideNotification object:nil];
    
 }
 
+#pragma mark -
+#pragma keyboard event handle
 
+- (void)keyboardWasShown:(NSNotification*)aNotification{
+    NSDictionary* info = [aNotification userInfo];
+    CGSize kbSize = [[info objectForKey:UIKeyboardFrameBeginUserInfoKey] CGRectValue].size;
+    
+    UIEdgeInsets contentInsets = UIEdgeInsetsMake(0.0, 0.0, kbSize.height, 0.0);
+    self.scrollView.contentInset = contentInsets;
+    self.scrollView.scrollIndicatorInsets = contentInsets;
+    
+    // If active text field is hidden by keyboard, scroll it so it's visible
+    // Your app might not need or want this behavior.
+    CGRect aRect = self.view.frame;
+    aRect.size.height -= kbSize.height;
+    if (!CGRectContainsPoint(aRect, self.textfield.frame.origin) ) {
+        [self.scrollView scrollRectToVisible:self.textfield.frame animated:YES];
+    }
+}
+
+- (void)keyboardWillBeHidden:(NSNotification*)aNotification{
+    
+}
 
 
 /*
