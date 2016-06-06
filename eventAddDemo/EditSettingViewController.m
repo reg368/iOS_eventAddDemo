@@ -68,8 +68,7 @@ const int LABEL_HEIGHT = 10;
 
 -(UIScrollView*)scrollView{
     if(!_scrollView){
-        CGRect fullScreenRect=[[UIScreen mainScreen] bounds];
-        _scrollView = [[UIScrollView alloc] initWithFrame:fullScreenRect];
+        _scrollView = [[UIScrollView alloc] initWithFrame:self.view.frame];
     }
     return _scrollView;
 }
@@ -359,14 +358,15 @@ const int LABEL_HEIGHT = 10;
     //NSLog(@"EditSettingViewController view width : %f , height : %f",self.view.frame.size.width,self.view.frame.size.height);
   
    dispatch_async(dispatch_get_main_queue(), ^{
-       
-   [self.view addSubview:self.scrollView];
+   self.scrollView.contentSize = self.view.frame.size;
    [self.scrollView addSubview:self.navigationBar];
    [self.scrollView addSubview:self.titlelabel];
    [self.scrollView addSubview:self.textfield];
    [self.scrollView addSubview:self.datePickerTitleLabel];
    [self.scrollView addSubview:self.picker];
    [self.scrollView addSubview:self.pickerTime];
+   
+   [self.view addSubview:self.scrollView];
    
    });
    
@@ -412,6 +412,7 @@ const int LABEL_HEIGHT = 10;
     
     // If active text field is hidden by keyboard, scroll it so it's visible
     // Your app might not need or want this behavior.
+   
     CGRect aRect = self.view.frame;
     aRect.size.height -= kbSize.height;
     if (!CGRectContainsPoint(aRect, self.textfield.frame.origin) ) {
@@ -420,7 +421,9 @@ const int LABEL_HEIGHT = 10;
 }
 
 - (void)keyboardWillBeHidden:(NSNotification*)aNotification{
-    
+    UIEdgeInsets contentInsets = UIEdgeInsetsZero;
+    self.scrollView.contentInset = contentInsets;
+    self.scrollView.scrollIndicatorInsets = contentInsets;
 }
 
 
