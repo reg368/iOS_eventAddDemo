@@ -76,7 +76,7 @@ const int LABEL_HEIGHT = 10;
 
 -(UILabel*)titlelabel{
     if(!_titlelabel){
-        _titlelabel = [[UILabel alloc] initWithFrame:CGRectMake(PADDING_LEFT, CGRectGetMaxY(self.navigationBar.frame)+PADDING_TOP, self.view.bounds.size.width-10, 30)];
+        _titlelabel = [[UILabel alloc] initWithFrame:CGRectMake(PADDING_LEFT, CGRectGetMaxY(self.pickerTime.frame)+PADDING_TOP, self.view.bounds.size.width-10, 30)];
         _titlelabel.text = @"請輸入事件標題 : ";
         [_titlelabel setTextColor:[UIColor blackColor]];
         [_titlelabel setFont:[UIFont fontWithName: @"Trebuchet MS" size: 14.0f]];
@@ -96,7 +96,7 @@ const int LABEL_HEIGHT = 10;
 
 -(UILabel*)datePickerTitleLabel{
     if(!_datePickerTitleLabel){
-        _datePickerTitleLabel = [[UILabel alloc] initWithFrame:CGRectMake(PADDING_LEFT, CGRectGetMaxY(self.textfield.frame) + PADDING_TOP, self.view.frame.size.width - 10, 30)];
+        _datePickerTitleLabel = [[UILabel alloc] initWithFrame:CGRectMake(PADDING_LEFT, CGRectGetMaxY(self.navigationBar.frame) + PADDING_TOP, self.view.frame.size.width - 10, 30)];
         _datePickerTitleLabel.text = @"請選擇提醒日期和時間";
         [_datePickerTitleLabel setTextColor:[UIColor blackColor]];
         [_datePickerTitleLabel setFont:[UIFont fontWithName: @"Trebuchet MS" size: 14.0f]];
